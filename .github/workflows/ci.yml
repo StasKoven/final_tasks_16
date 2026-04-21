@@ -10,25 +10,6 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: ticketsales
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U postgres"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
-    defaults:
-      run:
-        working-directory: .
-
     steps:
       - uses: actions/checkout@v4
 
@@ -41,13 +22,19 @@ jobs:
         run: dotnet restore Feedback.slnx
 
       - name: Build
-        run: dotnet build Feedback.slnx --no-restore
+        run: dotnet build Feedback.slnx --no-restore --configuration Release
 
       - name: Unit Tests
-        run: dotnet test tests/Feedback.Api.Tests/Feedback.Api.Tests.csproj --no-build --verbosity normal
+        run: dotnet test tests/Feedback.Api.Tests/Feedback.Api.Tests.csproj --no-restore --configuration Release --verbosity normal
 
       - name: Integration Tests
-        run: dotnet test tests/Feedback.Api.Tests.Integration/Feedback.Api.Tests.Integration.csproj --no-build --verbosity normal
+        run: dotnet test tests/Feedback.Api.Tests.Integration/Feedback.Api.Tests.Integration.csproj --no-restore --configuration Release --verbosity normal
+        env:
+          TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
+          TESTCONTAINERS_RYUK_DISABLED: false
 
       - name: Database Tests
-        run: dotnet test tests/Feedback.Api.Tests.Database/Feedback.Api.Tests.Database.csproj --no-build --verbosity normal
+        run: dotnet test tests/Feedback.Api.Tests.Database/Feedback.Api.Tests.Database.csproj --no-restore --configuration Release --verbosity normal
+        env:
+          TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
+          TESTCONTAINERS_RYUK_DISABLED: false
