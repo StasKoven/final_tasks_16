@@ -18,27 +18,24 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Restore
-        run: dotnet restore Feedback.slnx
-
-      - name: Build
-        run: dotnet build Feedback.slnx --no-restore --configuration Release
+      - name: Restore and Build
+        run: dotnet build Feedback.slnx
 
       - name: Unit Tests
-        run: dotnet test tests/Feedback.Api.Tests/Feedback.Api.Tests.csproj --no-build --configuration Release --verbosity normal
+        run: dotnet test tests/Feedback.Api.Tests/Feedback.Api.Tests.csproj --no-build --verbosity normal
 
       - name: Pull PostgreSQL Docker image
         run: docker pull postgres:16
 
       - name: Integration Tests
-        run: dotnet test tests/Feedback.Api.Tests.Integration/Feedback.Api.Tests.Integration.csproj --no-build --configuration Release --verbosity normal
+        run: dotnet test tests/Feedback.Api.Tests.Integration/Feedback.Api.Tests.Integration.csproj --no-build --verbosity normal
         env:
           DOCKER_HOST: unix:///var/run/docker.sock
           TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
           TESTCONTAINERS_RYUK_DISABLED: true
 
       - name: Database Tests
-        run: dotnet test tests/Feedback.Api.Tests.Database/Feedback.Api.Tests.Database.csproj --no-build --configuration Release --verbosity normal
+        run: dotnet test tests/Feedback.Api.Tests.Database/Feedback.Api.Tests.Database.csproj --no-build --verbosity normal
         env:
           DOCKER_HOST: unix:///var/run/docker.sock
           TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
