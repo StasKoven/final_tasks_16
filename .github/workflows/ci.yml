@@ -24,6 +24,11 @@ jobs:
       - name: Unit Tests
         run: dotnet test tests/Feedback.Api.Tests/Feedback.Api.Tests.csproj --no-build --verbosity normal
 
+      - name: Verify Docker is available
+        run: |
+          docker --version
+          docker run --rm hello-world
+
       - name: Pull PostgreSQL Docker image
         run: docker pull postgres:16
 
@@ -33,6 +38,7 @@ jobs:
           DOCKER_HOST: unix:///var/run/docker.sock
           TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
           TESTCONTAINERS_RYUK_DISABLED: true
+          TESTCONTAINERS_HOST_OVERRIDE: localhost
 
       - name: Database Tests
         run: dotnet test tests/Feedback.Api.Tests.Database/Feedback.Api.Tests.Database.csproj --no-build --verbosity normal
@@ -40,3 +46,4 @@ jobs:
           DOCKER_HOST: unix:///var/run/docker.sock
           TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
           TESTCONTAINERS_RYUK_DISABLED: true
+          TESTCONTAINERS_HOST_OVERRIDE: localhost
