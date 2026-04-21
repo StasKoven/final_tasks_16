@@ -8,21 +8,36 @@ namespace TicketSales.Api.Tests.Database;
 
 public class EventsDatabaseFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
-        .WithImage("postgres:16")
-        .Build();
+    private readonly string? _externalConnectionString =
+        Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING");
+
+    private readonly PostgreSqlContainer? _postgres;
+
+    public EventsDatabaseFixture()
+    {
+        if (_externalConnectionString is null)
+        {
+            _postgres = new PostgreSqlBuilder()
+                .WithImage("postgres:16")
+                .Build();
+        }
+    }
+
+    private string GetConnectionString() =>
+        _externalConnectionString ?? _postgres!.GetConnectionString();
 
     public AppDbContext CreateDbContext()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseNpgsql(_postgres.GetConnectionString())
+            .UseNpgsql(GetConnectionString())
             .Options;
         return new AppDbContext(options);
     }
 
     public async ValueTask InitializeAsync()
     {
-        await _postgres.StartAsync();
+        if (_postgres is not null)
+            await _postgres.StartAsync();
 
         using var db = CreateDbContext();
         await db.Database.EnsureCreatedAsync();
@@ -119,6 +134,7 @@ public class EventsDatabaseFixture : IAsyncLifetime
 
     public async ValueTask DisposeAsync()
     {
-        await _postgres.DisposeAsync();
+        if (_postgres is not null)
+            await _postgres.DisposeAsync();
     }
 }

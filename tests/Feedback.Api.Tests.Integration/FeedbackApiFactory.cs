@@ -9,9 +9,23 @@ namespace TicketSales.Api.Tests.Integration;
 
 public class EventsApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
-        .WithImage("postgres:16")
-        .Build();
+    private readonly string? _externalConnectionString =
+        Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING");
+
+    private readonly PostgreSqlContainer? _postgres;
+
+    public EventsApiFactory()
+    {
+        if (_externalConnectionString is null)
+        {
+            _postgres = new PostgreSqlBuilder()
+                .WithImage("postgres:16")
+                .Build();
+        }
+    }
+
+    private string GetConnectionString() =>
+        _externalConnectionString ?? _postgres!.GetConnectionString();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -22,13 +36,14 @@ public class EventsApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             if (descriptor != null) services.Remove(descriptor);
 
             services.AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(_postgres.GetConnectionString()));
+                options.UseNpgsql(GetConnectionString()));
         });
     }
 
     public async ValueTask InitializeAsync()
     {
-        await _postgres.StartAsync();
+        if (_postgres is not null)
+            await _postgres.StartAsync();
 
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -37,7 +52,8 @@ public class EventsApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     public new async ValueTask DisposeAsync()
     {
-        await _postgres.DisposeAsync();
+        if (_postgres is not null)
+            await _postgres.DisposeAsync();
         await base.DisposeAsync();
     }
 }
