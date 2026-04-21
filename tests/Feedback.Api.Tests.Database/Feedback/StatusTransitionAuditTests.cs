@@ -3,14 +3,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace TicketSales.Api.Tests.Database.Events;
 
-public class VenueCapacityTests : IClassFixture<EventsDatabaseFixture>
+[Collection("Database")]
+public class VenueCapacityTests(EventsDatabaseFixture fixture)
 {
-    private readonly EventsDatabaseFixture _fixture;
+    private readonly EventsDatabaseFixture _fixture = fixture;
 
-    public VenueCapacityTests(EventsDatabaseFixture fixture) =>
-        _fixture = fixture;
-
-    [Fact]
     public async Task SeededEvents_TotalTickets_NeverExceedVenueCapacityAsync()
     {
         await using var db = _fixture.CreateDbContext();

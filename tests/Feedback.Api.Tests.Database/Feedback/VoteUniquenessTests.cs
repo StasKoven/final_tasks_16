@@ -3,14 +3,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace TicketSales.Api.Tests.Database.Events;
 
-public class TicketCodeUniquenessTests : IClassFixture<EventsDatabaseFixture>
+[Collection("Database")]
+public class TicketCodeUniquenessTests(EventsDatabaseFixture fixture)
 {
-    private readonly EventsDatabaseFixture _fixture;
+    private readonly EventsDatabaseFixture _fixture = fixture;
 
-    public TicketCodeUniquenessTests(EventsDatabaseFixture fixture) =>
-        _fixture = fixture;
-
-    [Fact]
     public async Task TicketCode_UniqueConstraint_PreventsDuplicatesAtDatabaseLevelAsync()
     {
         await using var db = _fixture.CreateDbContext();

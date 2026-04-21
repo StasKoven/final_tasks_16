@@ -3,14 +3,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace TicketSales.Api.Tests.Database.Events;
 
-public class AvailableTicketsAtomicityTests : IClassFixture<EventsDatabaseFixture>
+[Collection("Database")]
+public class AvailableTicketsAtomicityTests(EventsDatabaseFixture fixture)
 {
-    private readonly EventsDatabaseFixture _fixture;
+    private readonly EventsDatabaseFixture _fixture = fixture;
 
-    public AvailableTicketsAtomicityTests(EventsDatabaseFixture fixture) =>
-        _fixture = fixture;
-
-    [Fact]
     public async Task PurchaseTicket_WithTransaction_DecreasesAvailableTicketsAtomicallyAsync()
     {
         await using var db = _fixture.CreateDbContext();

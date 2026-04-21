@@ -42,6 +42,12 @@ public class EventsDatabaseFixture : IAsyncLifetime
         using var db = CreateDbContext();
         await db.Database.EnsureCreatedAsync();
 
+        // Clear existing data to guarantee clean state (e.g. after integration tests)
+        db.Tickets.RemoveRange(db.Tickets);
+        db.Events.RemoveRange(db.Events);
+        db.Venues.RemoveRange(db.Venues);
+        await db.SaveChangesAsync();
+
         await SeedDataAsync(db);
     }
 
