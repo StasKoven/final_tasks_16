@@ -39,12 +39,14 @@ public class EventController(
     }
 
     [HttpPost]
-    public async Task<Results<Created<EventResponse>, ValidationProblem, Conflict<string>>> Create(
+    public async Task<Results<Created<EventResponse>, ProblemHttpResult, Conflict<string>>> Create(
         [FromBody] CreateEventRequest request)
     {
         var validation = await createValidator.ValidateAsync(request);
         if (!validation.IsValid)
-            return TypedResults.ValidationProblem(validation.ToDictionary());
+            return TypedResults.Problem(
+                new HttpValidationProblemDetails(validation.ToDictionary())
+                { Status = StatusCodes.Status422UnprocessableEntity });
 
         try
         {
@@ -58,12 +60,14 @@ public class EventController(
     }
 
     [HttpPut("{id:int}")]
-    public async Task<Results<Ok<EventResponse>, NotFound, ValidationProblem, Conflict<string>>> Update(
+    public async Task<Results<Ok<EventResponse>, NotFound, ProblemHttpResult, Conflict<string>>> Update(
         int id, [FromBody] UpdateEventRequest request)
     {
         var validation = await updateValidator.ValidateAsync(request);
         if (!validation.IsValid)
-            return TypedResults.ValidationProblem(validation.ToDictionary());
+            return TypedResults.Problem(
+                new HttpValidationProblemDetails(validation.ToDictionary())
+                { Status = StatusCodes.Status422UnprocessableEntity });
 
         try
         {
@@ -81,12 +85,14 @@ public class EventController(
     }
 
     [HttpPost("{id:int}/tickets")]
-    public async Task<Results<Created<IReadOnlyList<TicketResponse>>, NotFound, Conflict<string>, ValidationProblem>> PurchaseTickets(
+    public async Task<Results<Created<IReadOnlyList<TicketResponse>>, NotFound, Conflict<string>, ProblemHttpResult>> PurchaseTickets(
         int id, [FromBody] PurchaseTicketsRequest request)
     {
         var validation = await purchaseValidator.ValidateAsync(request);
         if (!validation.IsValid)
-            return TypedResults.ValidationProblem(validation.ToDictionary());
+            return TypedResults.Problem(
+                new HttpValidationProblemDetails(validation.ToDictionary())
+                { Status = StatusCodes.Status422UnprocessableEntity });
 
         try
         {
