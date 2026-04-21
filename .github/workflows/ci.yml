@@ -18,6 +18,12 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      - name: Verify .NET installation
+        run: dotnet --info
+
+      - name: Verify Docker
+        run: docker --version
+
       - name: Restore
         run: dotnet restore Feedback.slnx
 
@@ -25,16 +31,16 @@ jobs:
         run: dotnet build Feedback.slnx --no-restore --configuration Release
 
       - name: Unit Tests
-        run: dotnet test tests/Feedback.Api.Tests/Feedback.Api.Tests.csproj --no-restore --configuration Release --verbosity normal
+        run: dotnet test tests/Feedback.Api.Tests/Feedback.Api.Tests.csproj --no-restore --configuration Release --verbosity normal --logger "console;verbosity=detailed"
 
       - name: Integration Tests
-        run: dotnet test tests/Feedback.Api.Tests.Integration/Feedback.Api.Tests.Integration.csproj --no-restore --configuration Release --verbosity normal
+        run: dotnet test tests/Feedback.Api.Tests.Integration/Feedback.Api.Tests.Integration.csproj --no-restore --configuration Release --verbosity normal --logger "console;verbosity=detailed"
         env:
           TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
           TESTCONTAINERS_RYUK_DISABLED: false
 
       - name: Database Tests
-        run: dotnet test tests/Feedback.Api.Tests.Database/Feedback.Api.Tests.Database.csproj --no-restore --configuration Release --verbosity normal
+        run: dotnet test tests/Feedback.Api.Tests.Database/Feedback.Api.Tests.Database.csproj --no-restore --configuration Release --verbosity normal --logger "console;verbosity=detailed"
         env:
           TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
           TESTCONTAINERS_RYUK_DISABLED: false
